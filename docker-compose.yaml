@@ -1,3 +1,10 @@
+# Multi-network layout (branch: multi-network)
+#
+# - payment-service      -> s2s-payment-network only
+# - notification-service -> s2s-notification-network only
+# - order-service        -> s2s-order-network (home) + payment & notification nets for calls
+# - istiod               -> Kind cluster; sidecars use extra_hosts (not a Docker network)
+
 services:
   payment-service:
     build:
@@ -6,7 +13,9 @@ services:
     ports:
       - "4000:4000"
     networks:
-      - mesh
+      payment-network:
+        aliases:
+          - payment-service
     extra_hosts:
       - "istiod.istio-system.svc:host-gateway"
     cap_add:
@@ -37,7 +46,9 @@ services:
     ports:
       - "5001:5000"
     networks:
-      - mesh
+      notification-network:
+        aliases:
+          - notification-service
     extra_hosts:
       - "istiod.istio-system.svc:host-gateway"
     cap_add:
@@ -68,7 +79,11 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - mesh
+      order-network:
+        aliases:
+          - order-service
+      payment-network:
+      notification-network:
     extra_hosts:
       - "istiod.istio-system.svc:host-gateway"
     cap_add:
@@ -96,5 +111,12 @@ services:
       - ./istio/workloads/order-config/istio-token:/var/run/secrets/tokens/istio-token:ro
 
 networks:
-  mesh:
+  order-network:
+    name: s2s-order-network
+    driver: bridge
+  payment-network:
+    name: s2s-payment-network
+    driver: bridge
+  notification-network:
+    name: s2s-notification-network
     driver: bridge

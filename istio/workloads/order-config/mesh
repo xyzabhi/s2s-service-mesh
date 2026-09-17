@@ -1,6 +1,7 @@
 defaultConfig:
   discoveryAddress: istiod.istio-system.svc:31215
   proxyMetadata:
+    ISTIO_META_NETWORK: network-order
     ISTIO_META_DNS_CAPTURE: "true"
     ISTIO_META_SNI: istiod.istio-system.svc
     TRUST_DOMAIN: cluster.local

@@ -26,15 +26,32 @@ configure_workload() {
     -o "${out}"
 
   local mesh="${out}/mesh"
-  if [[ -f "${mesh}" ]]; then
-    patch_mesh_file "${mesh}"
-  fi
   if [[ -f "${out}/mesh.yaml" ]]; then
     patch_mesh_file "${out}/mesh.yaml"
+  fi
+  if [[ -f "${mesh}" ]]; then
+    patch_mesh_file "${mesh}"
   fi
   if [[ ! -f "${mesh}" && ! -f "${out}/mesh.yaml" ]]; then
     echo "missing mesh config in ${out}" >&2
     exit 1
+  fi
+
+  local network_id=""
+  case "$(basename "${out}")" in
+    order-config) network_id="network-order" ;;
+    payment-config) network_id="network-payment" ;;
+    notification-config) network_id="network-notification" ;;
+  esac
+
+  if [[ -n "${network_id}" ]]; then
+    patch_cluster_env "${out}/cluster.env" "${network_id}"
+    if [[ -f "${out}/mesh.yaml" ]]; then
+      patch_mesh_network "${out}/mesh.yaml" "${network_id}"
+    fi
+    if [[ -f "${mesh}" ]]; then
+      patch_mesh_network "${mesh}" "${network_id}"
+    fi
   fi
 }
 

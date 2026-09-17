@@ -8,7 +8,7 @@ defaultConfig:
     ISTIO_META_CLUSTER_ID: ""
     ISTIO_META_DNS_CAPTURE: "true"
     ISTIO_META_MESH_ID: ""
-    ISTIO_META_NETWORK: ""
+    ISTIO_META_NETWORK: network-order
     ISTIO_META_POD_PORTS: '[{"name":"http","containerPort":3000,"protocol":""}]'
     ISTIO_META_WORKLOAD_NAME: order
     ISTIO_METAJSON_LABELS: '{"app":"order","service.istio.io/canonical-name":"order","service.istio.io/canonical-revision":"latest"}'
