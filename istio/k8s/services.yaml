@@ -27,3 +27,18 @@ spec:
       targetPort: 4000
   selector:
     app: payment
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification
+  namespace: mesh-workloads
+  labels:
+    app: notification
+spec:
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+  selector:
+    app: notification

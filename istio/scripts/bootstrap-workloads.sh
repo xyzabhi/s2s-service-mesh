@@ -13,6 +13,7 @@ kubectl apply -f "${ROOT}/istio/k8s/serviceaccounts.yaml"
 kubectl apply -f "${ROOT}/istio/k8s/services.yaml"
 kubectl apply -f "${ROOT}/istio/workloads/order-workloadgroup.yaml"
 kubectl apply -f "${ROOT}/istio/workloads/payment-workloadgroup.yaml"
+kubectl apply -f "${ROOT}/istio/workloads/notification-workloadgroup.yaml"
 
 configure_workload() {
   local wg="$1"
@@ -39,8 +40,10 @@ configure_workload() {
 
 configure_workload "${ROOT}/istio/workloads/order-workloadgroup.yaml" "${ROOT}/istio/workloads/order-config"
 configure_workload "${ROOT}/istio/workloads/payment-workloadgroup.yaml" "${ROOT}/istio/workloads/payment-config"
+configure_workload "${ROOT}/istio/workloads/notification-workloadgroup.yaml" "${ROOT}/istio/workloads/notification-config"
 
 echo "Bootstrap complete."
-echo "  order:   ${ROOT}/istio/workloads/order-config"
-echo "  payment: ${ROOT}/istio/workloads/payment-config"
+echo "  order:        ${ROOT}/istio/workloads/order-config"
+echo "  payment:      ${ROOT}/istio/workloads/payment-config"
+echo "  notification: ${ROOT}/istio/workloads/notification-config"
 echo "Start mesh: docker compose up --build"

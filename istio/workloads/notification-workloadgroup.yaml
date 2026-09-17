@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1
+kind: WorkloadGroup
+metadata:
+  name: notification
+  namespace: mesh-workloads
+spec:
+  metadata:
+    labels:
+      app: notification
+  template:
+    serviceAccount: notification
+    ports:
+      http: 5000

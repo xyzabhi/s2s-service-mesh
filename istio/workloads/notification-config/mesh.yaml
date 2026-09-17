@@ -1,0 +1,17 @@
+defaultConfig:
+  discoveryAddress: istiod.istio-system.svc:31215
+  proxyMetadata:
+    ISTIO_META_SNI: istiod.istio-system.svc
+    CANONICAL_REVISION: latest
+    CANONICAL_SERVICE: notification
+    ISTIO_META_AUTO_REGISTER_GROUP: notification
+    ISTIO_META_CLUSTER_ID: ""
+    ISTIO_META_DNS_CAPTURE: "true"
+    ISTIO_META_MESH_ID: ""
+    ISTIO_META_NETWORK: ""
+    ISTIO_META_POD_PORTS: '[{"name":"http","containerPort":5000,"protocol":""}]'
+    ISTIO_META_WORKLOAD_NAME: notification
+    ISTIO_METAJSON_LABELS: '{"app":"notification","service.istio.io/canonical-name":"notification","service.istio.io/canonical-revision":"latest"}'
+    POD_NAMESPACE: mesh-workloads
+    SERVICE_ACCOUNT: notification
+    TRUST_DOMAIN: cluster.local

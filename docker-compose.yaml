@@ -30,6 +30,37 @@ services:
       - ./istio/workloads/payment-config/root-cert.pem:/var/run/secrets/istio/root-cert.pem:ro
       - ./istio/workloads/payment-config/istio-token:/var/run/secrets/tokens/istio-token:ro
 
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    ports:
+      - "5001:5000"
+    networks:
+      - mesh
+    extra_hosts:
+      - "istiod.istio-system.svc:host-gateway"
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - seccomp:unconfined
+
+  notification-istio:
+    image: istio/proxyv2:1.31.0
+    command: proxy
+    depends_on:
+      - notification-service
+    network_mode: service:notification-service
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - ./istio/workloads/notification-config/cluster.env:/var/lib/istio/envoy/cluster.env:ro
+      - ./istio/workloads/notification-config/mesh.yaml:/etc/istio/config/mesh:ro
+      - ./istio/workloads/notification-config/root-cert.pem:/var/run/secrets/istio/root-cert.pem:ro
+      - ./istio/workloads/notification-config/istio-token:/var/run/secrets/tokens/istio-token:ro
+
   order-service:
     build:
       context: .
