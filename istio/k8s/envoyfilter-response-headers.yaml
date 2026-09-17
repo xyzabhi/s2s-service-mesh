@@ -1,0 +1,77 @@
+# Inbound response headers added by the sidecar (no application code changes).
+# Verify: curl -i http://localhost:4000/payments/x  (look for x-app, x-instance-id)
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: inbound-headers-order
+  namespace: mesh-workloads
+spec:
+  workloadSelector:
+    labels:
+      app: order
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+      patch:
+        operation: INSERT_FIRST
+        value:
+          name: envoy.filters.http.lua.order-headers
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            inlineCode: |
+              function envoy_on_response(handle)
+                handle:headers():add("x-app", "order")
+                handle:headers():add("x-instance-id", os.getenv("HOSTNAME") or "unknown")
+              end
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: inbound-headers-payment
+  namespace: mesh-workloads
+spec:
+  workloadSelector:
+    labels:
+      app: payment
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+      patch:
+        operation: INSERT_FIRST
+        value:
+          name: envoy.filters.http.lua.payment-headers
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            inlineCode: |
+              function envoy_on_response(handle)
+                handle:headers():add("x-app", "payment")
+                handle:headers():add("x-instance-id", os.getenv("HOSTNAME") or "unknown")
+              end
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: inbound-headers-notification
+  namespace: mesh-workloads
+spec:
+  workloadSelector:
+    labels:
+      app: notification
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+      patch:
+        operation: INSERT_FIRST
+        value:
+          name: envoy.filters.http.lua.notification-headers
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            inlineCode: |
+              function envoy_on_response(handle)
+                handle:headers():add("x-app", "notification")
+                handle:headers():add("x-instance-id", os.getenv("HOSTNAME") or "unknown")
+              end
