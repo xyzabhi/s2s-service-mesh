@@ -1,0 +1,14 @@
+defaultConfig:
+  discoveryAddress: host.docker.internal:31215
+  proxyMetadata:
+    CANONICAL_REVISION: latest
+    CANONICAL_SERVICE: order
+    ISTIO_META_CLUSTER_ID: ""
+    ISTIO_META_DNS_CAPTURE: "true"
+    ISTIO_META_MESH_ID: ""
+    ISTIO_META_NETWORK: ""
+    ISTIO_META_WORKLOAD_NAME: order
+    ISTIO_METAJSON_LABELS: '{"app":"order","service.istio.io/canonical-name":"order","service.istio.io/canonical-revision":"latest"}'
+    POD_NAMESPACE: mesh-workloads
+    SERVICE_ACCOUNT: order
+    TRUST_DOMAIN: cluster.local

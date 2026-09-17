@@ -1,0 +1,24 @@
+services:
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    ports:
+      - "4000:4000"
+    networks:
+      - mesh
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    ports:
+      - "3000:8080"
+    depends_on:
+      - payment-service
+    networks:
+      - mesh
+
+networks:
+  mesh:
+    driver: bridge

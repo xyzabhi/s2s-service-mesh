@@ -1,0 +1,19 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+
+spec:
+  profile: default
+
+  components:
+    pilot:
+      k8s:
+        service:
+          type: NodePort
+          ports:
+            - name: grpc-xds
+              port: 15010
+              targetPort: 15010
+            - name: https-dns
+              port: 15012
+              targetPort: 15012
+              nodePort: 31215

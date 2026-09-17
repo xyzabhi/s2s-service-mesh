@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1
+kind: WorkloadGroup
+
+metadata:
+  name: order
+  namespace: mesh-workloads
+
+spec:
+  metadata:
+    labels:
+      app: order
+  template:
+    serviceAccount: order
