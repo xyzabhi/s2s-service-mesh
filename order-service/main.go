@@ -24,7 +24,7 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/orders/")
 
 	// Call Payment Service
-	resp, err := http.Get("http://localhost:4000/payments/" + id)
+	resp, err := http.Get("http://payment-service:4000/payments/" + id)
 
 	if err != nil {
 		http.Error(w, "Payment service unavailable", http.StatusBadGateway)

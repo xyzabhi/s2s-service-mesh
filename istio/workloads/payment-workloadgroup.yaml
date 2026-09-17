@@ -1,15 +1,13 @@
 apiVersion: networking.istio.io/v1
 kind: WorkloadGroup
-
 metadata:
-  name: order
+  name: payment
   namespace: mesh-workloads
-
 spec:
   metadata:
     labels:
-      app: order
+      app: payment
   template:
-    serviceAccount: order
+    serviceAccount: payment
     ports:
-      http: 3000
+      http: 4000

@@ -7,14 +7,10 @@ COPY payment-service/main.go ./payment-service/
 
 RUN CGO_ENABLED=0 go build -o /payment-service ./payment-service
 
-FROM envoyproxy/envoy:v1.32.3
+FROM alpine:3.20
 
-USER root
+RUN apk add --no-cache ca-certificates
 
-COPY payment-service/envoy.yaml /etc/envoy/envoy.yaml
 COPY --from=builder /payment-service /usr/local/bin/payment-service
-COPY payment-service/start.sh /start.sh
 
-RUN chmod +x /start.sh
-
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["/usr/local/bin/payment-service"]

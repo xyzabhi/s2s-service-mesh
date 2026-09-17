@@ -7,17 +7,61 @@ services:
       - "4000:4000"
     networks:
       - mesh
+    extra_hosts:
+      - "istiod.istio-system.svc:host-gateway"
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - seccomp:unconfined
+
+  payment-istio:
+    image: istio/proxyv2:1.31.0
+    command: proxy
+    depends_on:
+      - payment-service
+    network_mode: service:payment-service
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - ./istio/workloads/payment-config/cluster.env:/var/lib/istio/envoy/cluster.env:ro
+      - ./istio/workloads/payment-config/mesh.yaml:/etc/istio/config/mesh:ro
+      - ./istio/workloads/payment-config/root-cert.pem:/var/run/secrets/istio/root-cert.pem:ro
+      - ./istio/workloads/payment-config/istio-token:/var/run/secrets/tokens/istio-token:ro
 
   order-service:
     build:
       context: .
       dockerfile: order-service/Dockerfile
     ports:
-      - "3000:8080"
-    depends_on:
-      - payment-service
+      - "3000:3000"
     networks:
       - mesh
+    extra_hosts:
+      - "istiod.istio-system.svc:host-gateway"
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    depends_on:
+      - payment-service
+
+  order-istio:
+    image: istio/proxyv2:1.31.0
+    command: proxy
+    depends_on:
+      - order-service
+    network_mode: service:order-service
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - ./istio/workloads/order-config/cluster.env:/var/lib/istio/envoy/cluster.env:ro
+      - ./istio/workloads/order-config/mesh.yaml:/etc/istio/config/mesh:ro
+      - ./istio/workloads/order-config/root-cert.pem:/var/run/secrets/istio/root-cert.pem:ro
+      - ./istio/workloads/order-config/istio-token:/var/run/secrets/tokens/istio-token:ro
 
 networks:
   mesh:

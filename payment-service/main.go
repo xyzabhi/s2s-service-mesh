@@ -32,9 +32,9 @@ func main() {
 
 	http.HandleFunc("/payments/", paymentHandler)
 
-	log.Println("Payment Service running on :3002")
+	log.Println("Payment Service running on :4000")
 
-	err := http.ListenAndServe(":3002", nil)
+	err := http.ListenAndServe(":4000", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
