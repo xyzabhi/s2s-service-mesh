@@ -2,7 +2,13 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 
 spec:
-  profile: default
+  # minimal = istiod only (fewer images; better on locked-down laptops)
+  profile: minimal
+  hub: docker.io/istio
+  tag: 1.31.0
+  values:
+    global:
+      imagePullPolicy: IfNotPresent
 
   components:
     pilot:

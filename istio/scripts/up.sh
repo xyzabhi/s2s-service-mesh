@@ -5,6 +5,9 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 chmod +x "${ROOT}/istio/scripts/"*.sh
 
+"${ROOT}/istio/scripts/preload-istio-images.sh"
+"${ROOT}/istio/scripts/install-istio-kind.sh"
+
 "${ROOT}/istio/scripts/bootstrap-workloads.sh"
 kubectl apply -f "${ROOT}/istio/k8s/services.yaml"
 

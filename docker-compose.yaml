@@ -15,7 +15,8 @@ services:
       - seccomp:unconfined
 
   payment-istio:
-    image: istio/proxyv2:1.31.0
+    image: ${ISTIO_PROXY_IMAGE:-docker.io/istio/proxyv2:1.31.0}
+    pull_policy: if_not_present
     command: proxy
     depends_on:
       - payment-service
@@ -46,7 +47,8 @@ services:
       - seccomp:unconfined
 
   notification-istio:
-    image: istio/proxyv2:1.31.0
+    image: ${ISTIO_PROXY_IMAGE:-docker.io/istio/proxyv2:1.31.0}
+    pull_policy: if_not_present
     command: proxy
     depends_on:
       - notification-service
@@ -80,7 +82,8 @@ services:
       - notification-service
 
   order-istio:
-    image: istio/proxyv2:1.31.0
+    image: ${ISTIO_PROXY_IMAGE:-docker.io/istio/proxyv2:1.31.0}
+    pull_policy: if_not_present
     command: proxy
     depends_on:
       - order-service
