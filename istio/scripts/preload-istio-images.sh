@@ -5,11 +5,30 @@ set -euo pipefail
 
 ISTIO_TAG="${ISTIO_TAG:-1.31.0}"
 ISTIO_HUB="${ISTIO_HUB:-docker.io/istio}"
-KIND_CLUSTER="${KIND_CLUSTER:-kind}"
 PULL_RETRIES="${PULL_RETRIES:-3}"
 
 PILOT_IMAGE="${ISTIO_HUB}/pilot:${ISTIO_TAG}"
 PROXY_IMAGE="${ISTIO_HUB}/proxyv2:${ISTIO_TAG}"
+
+resolve_kind_cluster() {
+  if [[ -n "${KIND_CLUSTER:-}" ]]; then
+    echo "${KIND_CLUSTER}"
+    return 0
+  fi
+  if kind get clusters 2>/dev/null | grep -qx kind; then
+    echo kind
+    return 0
+  fi
+  local first
+  first="$(kind get clusters 2>/dev/null | head -1 || true)"
+  if [[ -n "${first}" ]]; then
+    echo "${first}"
+    return 0
+  fi
+  echo kind
+}
+
+KIND_CLUSTER="$(resolve_kind_cluster)"
 
 pull_image() {
   local ref="$1"
@@ -54,38 +73,81 @@ tag_aliases() {
   docker tag "${pilot}" "istio/pilot:${ISTIO_TAG}" || true
 }
 
+kind_load_one() {
+  local img="$1"
+  echo "Loading ${img} into kind cluster '${KIND_CLUSTER}'..."
+
+  if kind load docker-image "${img}" --name "${KIND_CLUSTER}"; then
+    return 0
+  fi
+
+  echo "kind load docker-image failed; trying image-archive (often works on corp Docker)..." >&2
+  local tar
+  tar="$(mktemp "/tmp/istio-kind-load-XXXXXX.tar")"
+  trap 'rm -f "${tar}"' RETURN
+  docker save "${img}" -o "${tar}"
+  kind load image-archive "${tar}" --name "${KIND_CLUSTER}"
+}
+
 load_pilot_into_kind() {
   if ! command -v kind >/dev/null 2>&1; then
     echo "kind not found; skipping kind load (only needed for istiod in Kubernetes)."
     return 0
   fi
   if ! kind get clusters 2>/dev/null | grep -qx "${KIND_CLUSTER}"; then
-    echo "Kind cluster '${KIND_CLUSTER}' not found; create it first:"
-    echo "  kind create cluster --config kind-config.yaml"
-    return 0
+    echo "Kind cluster '${KIND_CLUSTER}' not found. Clusters:" >&2
+    kind get clusters >&2 || true
+    echo "Create one: kind create cluster --config kind-config.yaml" >&2
+    return 1
   fi
-  local to_load=(
+
+  local candidates=(
     "${PILOT_IMAGE}"
     "docker.io/istio/pilot:${ISTIO_TAG}"
+    "istio/pilot:${ISTIO_TAG}"
   )
   local img
-  for img in "${to_load[@]}"; do
+  for img in "${candidates[@]}"; do
     if docker image inspect "${img}" >/dev/null 2>&1; then
-      echo "Loading ${img} into kind cluster ${KIND_CLUSTER}..."
-      kind load docker-image "${img}" --name "${KIND_CLUSTER}"
-      return 0
+      if kind_load_one "${img}"; then
+        echo "Loaded into kind: ${img}"
+        return 0
+      fi
     fi
   done
-  echo "No pilot image locally to load into kind." >&2
+
+  cat >&2 <<EOF
+Failed to load pilot image into kind cluster '${KIND_CLUSTER}'.
+
+Try manually:
+  docker pull docker.io/istio/pilot:${ISTIO_TAG}
+  docker save docker.io/istio/pilot:${ISTIO_TAG} -o /tmp/pilot.tar
+  kind load image-archive /tmp/pilot.tar --name ${KIND_CLUSTER}
+
+Checks:
+  docker info
+  df -h /
+  kind get clusters
+  docker exec ${KIND_CLUSTER}-control-plane crictl images | head
+
+If disk is full, run: docker system prune -f
+If Kind is broken: kind delete cluster --name ${KIND_CLUSTER} && kind create cluster --config kind-config.yaml
+
+EOF
   return 1
 }
 
 main() {
+  if ! docker info >/dev/null 2>&1; then
+    echo "Docker is not running or your user lacks permission (try: newgrp docker)." >&2
+    exit 1
+  fi
+
   pull_image "${PILOT_IMAGE}"
   pull_image "${PROXY_IMAGE}"
   tag_aliases
   load_pilot_into_kind
-  echo "Images ready:"
+  echo "Images ready (kind cluster: ${KIND_CLUSTER}):"
   echo "  istiod:  ${PILOT_IMAGE}"
   echo "  sidecar: ${PROXY_IMAGE}"
 }
